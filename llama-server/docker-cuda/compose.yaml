@@ -1,0 +1,41 @@
+services:
+  llama-server:
+    image: turboquant-cuda:latest
+    container_name: llama-server
+#    restart: unless-stopped
+    ports:
+      - "8088:8080"
+    volumes:
+      - /mnt/user/models:/models
+      - /mnt/user/appdata/llama-server/config:/config
+    command:
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8080"
+      - --models-dir
+      - /models
+      - --models-preset
+      - /config/models.ini
+      - --models-max
+      - "1"
+      - --sleep-idle-seconds
+      - "600"
+
+#Set these in the models.ini file
+#      - -ngl
+#      - "99"
+#      - -c
+#      - "131070"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    develop:
+      watch:
+        - action: restart
+          path: ./models.ini
+          target: /config/models.ini
